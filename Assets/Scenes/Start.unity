@@ -5256,7 +5256,7 @@ PrefabInstance:
         type: 3}
       propertyPath: rewardClip
       value: 
-      objectReference: {fileID: 8300000, guid: f42562707239841f4aa98b2105832c49, type: 3}
+      objectReference: {fileID: 8300000, guid: 5dc2fefb056be4234bd9852f411c955f, type: 3}
     - target: {fileID: 4551629912378942411, guid: 7554bfb7c2ebf456e8e9c0a45a6b9ee0,
         type: 3}
       propertyPath: startClip
