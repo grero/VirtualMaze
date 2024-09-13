@@ -15,6 +15,7 @@ public class RewardsController : ConfigurableComponent {
         public bool enableRewardAreaError;
         public bool enableNonTargetRaycast;
         public float rewardAreaErrorTime;
+        public bool playSound;
 
         public Settings(string portNum,
             int rewardDurationMilliSecs,
@@ -24,7 +25,8 @@ public class RewardsController : ConfigurableComponent {
             float directionErrorDistance,
             bool enableRewardAreaError,
             bool enableNonTargetRaycast,
-            float rewardAreaErrorTime)
+            float rewardAreaErrorTime,
+            bool playSound)
         {
             this.proximityDistance = proximityDistance;
             this.portNum = portNum;
@@ -35,6 +37,7 @@ public class RewardsController : ConfigurableComponent {
             this.enableRewardAreaError = enableRewardAreaError;
             this.enableNonTargetRaycast = enableNonTargetRaycast;
             this.rewardAreaErrorTime = rewardAreaErrorTime;
+            this.playSound = playSound;
         }
     }
 
@@ -44,6 +47,7 @@ public class RewardsController : ConfigurableComponent {
     public bool enableNonTargetRaycast;
     public float rewardAreaErrorTime { get; set; }
 
+    public bool playSound;
     private const int buadRate = 9600;
     private static SerialPort rewardSerial;
 
@@ -90,6 +94,7 @@ public class RewardsController : ConfigurableComponent {
         //PlayerAudio.instance.PlayRewardClip ();
         RewardValveOn();
         //delay for rewardTime seconds
+        // TODO: Play sound
         yield return new WaitForSecondsRealtime(rewardDurationMilliSecs / 1000.0f);
         RewardValveOff();
     }
@@ -101,11 +106,11 @@ public class RewardsController : ConfigurableComponent {
 
     public override ComponentSettings GetCurrentSettings() {
         return new Settings(portNum, rewardDurationMilliSecs, RewardArea.RequiredViewAngle, RewardArea.RequiredDistance,
-            RewardArea.ProximityDistance, DirectionError.distanceRange, enableRewardAreaError, enableNonTargetRaycast, rewardAreaErrorTime);
+            RewardArea.ProximityDistance, DirectionError.distanceRange, enableRewardAreaError, enableNonTargetRaycast, rewardAreaErrorTime, playSound);
     }
 
     public override ComponentSettings GetDefaultSettings() {
-        return new Settings("", 1000, 45f, 1f, 1f, 0.5f, false, false, -1f); //1000, 0.8f, 1f, 1f, 0.5f
+        return new Settings("", 1000, 45f, 1f, 1f, 0.5f, false, false, -1f,false); //1000, 0.8f, 1f, 1f, 0.5f
     }
 
     public override Type GetSettingsType() {
@@ -127,5 +132,6 @@ public class RewardsController : ConfigurableComponent {
         enableRewardAreaError = settings.enableRewardAreaError;
         enableNonTargetRaycast = settings.enableNonTargetRaycast;
         rewardAreaErrorTime = settings.rewardAreaErrorTime;
+        playSound = settings.playSound;
     }
 }

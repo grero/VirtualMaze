@@ -9,6 +9,7 @@ public class PlayerAudio : MonoBehaviour {
 	public AudioSource audioSource;
 
 	private static PlayerAudio _instance;
+	//This instance lives under UICamera in the start scene (duh!)
 	public static PlayerAudio instance{
 		get{
 			_instance = GameObject.FindObjectOfType(typeof(PlayerAudio)) as PlayerAudio;

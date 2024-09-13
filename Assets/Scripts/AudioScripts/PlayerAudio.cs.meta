@@ -1,10 +1,13 @@
 fileFormatVersion: 2
 guid: 5ebb99d627847480489ca6ae3f2a9edc
-timeCreated: 1434005910
-licenseType: Free
 MonoImporter:
+  externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - rewardClip: {fileID: 8300000, guid: 569ec0ec63e934769a3e5000313a23fc, type: 3}
+  - startClip: {instanceID: 0}
+  - errorClip: {fileID: 8300000, guid: 9867167ea89524c9cb9a1c5d11cbfd3f, type: 3}
+  - audioSource: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

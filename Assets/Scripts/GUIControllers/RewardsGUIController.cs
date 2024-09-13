@@ -16,6 +16,7 @@ public class RewardsGUIController : DataGUIController {
     public Toggle rewardAreaErrorToggle;
     public Toggle nonTargetRaycastToggle;
     public InputField rewardAreaErrorField;
+    public Toggle playRewardSoundToggle;
 
 
     public RewardsController rewardsController;
@@ -31,6 +32,7 @@ public class RewardsGUIController : DataGUIController {
         rewardAreaErrorToggle.onValueChanged.AddListener(toggleRewardAreaError);
         nonTargetRaycastToggle.onValueChanged.AddListener(toggleNonTargetRaycast);
         rewardAreaErrorField.onEndEdit.AddListener(OnRewardAreaErrorFieldEndEdit);
+        playRewardSoundToggle.onValueChanged.AddListener(toggleRewardSound);
     }
 
     private void OnRequiredViewAngleChanged(string value) {
@@ -70,6 +72,7 @@ public class RewardsGUIController : DataGUIController {
         if (int.TryParse(input, out int duration)) {
             rewardsController.rewardDurationMilliSecs = duration;
         }
+        Console.WriteError(input);
     }
 
     public void OnRequiredDistanceChanged(string value) {
@@ -142,6 +145,28 @@ public class RewardsGUIController : DataGUIController {
     private void toggleRewardAreaError(bool isOn)
     {
         rewardsController.enableRewardAreaError = isOn;
+        if(isOn)
+        {
+            Console.Write("Reward area error on");
+        }
+        else
+        {
+            Console.Write("Reward area error off");
+        }
+
+    }
+
+    private void toggleRewardSound(bool isOn)
+    {
+        rewardsController.playSound = isOn;
+        if(isOn)
+       { 
+            Console.WriteError("Reward sound on");
+       }
+       else{
+        Console.WriteError("Reward sound off");
+       }
+
     }
 
     private void toggleNonTargetRaycast(bool isOn)
@@ -178,5 +203,6 @@ public class RewardsGUIController : DataGUIController {
         rewardAreaErrorToggle.isOn = rewardsController.enableRewardAreaError;
         nonTargetRaycastToggle.isOn = rewardsController.enableNonTargetRaycast;
         rewardAreaErrorField.text = rewardsController.rewardAreaErrorTime.ToString();
+        playRewardSoundToggle.isOn = rewardsController.playSound;
     }
 }

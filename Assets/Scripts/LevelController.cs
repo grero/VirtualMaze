@@ -275,6 +275,10 @@ public class LevelController : MonoBehaviour {
             else {
                 if (logicProvider.IsTrialCompleteAfterCurrentTask(success)) {
                     cueController.HideHint();
+                    if (rewardsCtrl.playSound)
+                    {
+                        PlayerAudio.instance.PlayRewardClip();
+                    }
                     rewardsCtrl.Reward();
                     trialCounter++;
 
@@ -537,6 +541,8 @@ public class LevelController : MonoBehaviour {
             Debug.Log($"PPA \"{parallelPort.portHexAddress}\" in use");
             Debug.Log($"TST \"{(int)SessionTrigger.TrialEndedTrigger}\" in use");
             Debug.Log($"TI \"{(int)targetIndex + 1}\" in use");
+
+            // PlayerAudio.instance.PlayRewardClip(); // play audio
         }
         else 
         {
