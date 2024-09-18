@@ -32,8 +32,8 @@ public class StartWaypoint : MonoBehaviour
             return waypointList_mod[waypoint_idx].transform;
         }
         else {
-            return waypointList[0].transform;
-            //return single_waypoint.transform;
+            //return waypointList[0].transform;
+            return single_waypoint.transform;
         }
     }
 }
