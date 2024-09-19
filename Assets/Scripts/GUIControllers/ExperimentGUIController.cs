@@ -15,6 +15,8 @@ public class ExperimentGUIController : DataGUIController {
     public InputField sessionIntermissionDurationField;
     public InputField timeoutDurationField;
     public InputField timeLimitField;
+    public InputField maxAngularDeviation;
+
 
     public Toggle fixedTrailIntermissionToggle;
     public Toggle randomTrailIntermissionToggle;
@@ -47,6 +49,7 @@ public class ExperimentGUIController : DataGUIController {
         sessionIntermissionDurationField.onEndEdit.AddListener(OnSessionIntermissionFieldEndEdit);
         timeoutDurationField.onEndEdit.AddListener(OnTimeoutDurationFieldEndEdit);
         timeLimitField.onEndEdit.AddListener(OnTimeLimitFieldEndEdit);
+        maxAngularDeviation.onEndEdit.AddListener(OnMaxAngularDeviationEdit);
 
         fixedTrailIntermissionToggle.onValueChanged.AddListener(OnFixedTrialIntermissionToggleChanged);
         randomTrailIntermissionToggle.onValueChanged.AddListener(OnRandomTrialIntermissionToggleChanged);
@@ -138,6 +141,12 @@ public class ExperimentGUIController : DataGUIController {
             text = Session.trialTimeLimit.ToString();
             Console.WriteError("Invalid Value");
         }
+    }
+
+    private void OnMaxAngularDeviationEdit(string text){
+        int maxAngle = 180;
+        int.TryParse(text, out maxAngle);
+        experimentController.maxAngularDeviation = maxAngle; 
     }
 
     private void OnSessionIntermissionFieldEndEdit(string text) {

@@ -186,7 +186,12 @@ public class RobotMovement : ConfigurableComponent {
     /// <param name="waypoint"></param>
     public void RandomiseDirection(Transform waypoint)
     {
-        int y_rotation = Random.Range(0, 360);
+        RandomiseDirection(transform, 180);
+    }
+
+    public void RandomiseDirection(Transform waypoint, int maxAngle)
+    {
+        int y_rotation = 2*Random.Range(0, maxAngle) - maxAngle;
         //Vector3 v = transform.rotation.eulerAngles;
         //transform.rotation = Quaternion.Euler(v.x, y_rotation, v.z);
         transform.Rotate(0.0f, y_rotation, 0.0f, Space.Self);

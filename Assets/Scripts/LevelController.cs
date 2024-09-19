@@ -61,6 +61,7 @@ public class LevelController : MonoBehaviour {
     public bool restartOnTaskFail = true;
     public bool resetRobotPositionDuringInterTrial = true;
     public bool faceRandomDirectionOnStart = false;
+    public int maxAngularDeviation = 180;
     public bool multipleWaypoints = false;
     public bool disableInterSessionBlackout = false;
     public bool resetPositionOnSession = false;
@@ -331,7 +332,7 @@ public class LevelController : MonoBehaviour {
             robotMovement.MoveToWaypoint(startWaypoint);
         }
         if (faceRandomDirectionOnStart) {
-            robotMovement.RandomiseDirection(startWaypoint);
+            robotMovement.RandomiseDirection(startWaypoint,maxAngularDeviation);
         }
 
         //fade in and wait for fadein to complete
@@ -412,6 +413,7 @@ public class LevelController : MonoBehaviour {
             errorFlag = false; // don't sound error immediately after new trial start if resetRobotPositionDuringInterTrial is false
         }
 
+        // TODO: I think we should wait for longer here
         yield return new WaitForSeconds(.1f); 
 
         errorFlag = true; // resets flag for next trial
@@ -423,7 +425,7 @@ public class LevelController : MonoBehaviour {
             robotMovement.MoveToWaypoint(startWaypoint);
             if (faceRandomDirectionOnStart)
             {
-                robotMovement.RandomiseDirection(startWaypoint);
+                robotMovement.RandomiseDirection(startWaypoint, maxAngularDeviation);
             }
         }
 
