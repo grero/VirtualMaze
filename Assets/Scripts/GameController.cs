@@ -1,4 +1,4 @@
-﻿
+
 using System.Runtime.InteropServices;
 using System;
 using System.Collections;
@@ -15,7 +15,8 @@ using VirtualMaze.Assets.Scripts.Raycasting;
 /// </summary>
 public class GameController : MonoBehaviour {
     //UPDATE THESE WITH EACH COMPILATION
-    public static readonly int versionNum = 4;
+    // - NO ONE DOES THAT!
+    public static readonly int versionNum = 5;
     public static readonly string versionInfo = "Taxi Continuous/Discontinuous v";
     public static readonly string pportInfo = "v" + versionNum;
 
