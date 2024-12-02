@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using System.Collections;
 using Random = UnityEngine.Random;
@@ -14,6 +14,7 @@ public class RobotMovement : ConfigurableComponent {
     public delegate void RobotMovementEvent(Transform transform);
 
     public float theta;
+    public bool ismoving;
 
     /// <summary>
     /// Wrapper class for RobotMovement settings
@@ -85,9 +86,7 @@ public class RobotMovement : ConfigurableComponent {
 
     // Update is called once per frame
     void Update() {
-        //do not do anything if movement disabled
-        if (!enableMovement) return;
-
+        // we need to check whether the monkey trying to move the joystick
         float vertical;
         float horizontal;
 
@@ -129,7 +128,16 @@ public class RobotMovement : ConfigurableComponent {
                     vertical = 0;
                 }
             }
+            //indicate that we are moving
+            ismoving = true;
         }
+        else
+        {
+            ismoving = false;
+        }
+
+        //do not do anything if movement disabled
+        if (!enableMovement) return;
 
         if (ShouldRotate(horizontal)) {
             Quaternion rotateBy = Quaternion.Euler(0, horizontal * RotationSpeed * Time.deltaTime, 0);
