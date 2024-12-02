@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -137,6 +137,12 @@ public class ExperimentController : ConfigurableComponent {
 
         //initilize ExperimentLogger
         logger.SetExperimentIdDefault();
+        //this is a hack; check if saveLocation is empty, and if it is, set it to a detaul value
+        //I think that this should be done somewhere else
+        if (string.IsNullOrEmpty(SaveLocation))
+        {
+            SaveLocation = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        }
         logger.SetSaveLocation(SaveLocation);
 
         goNextLevelCoroutine = StartCoroutine(GoToNextSession());
