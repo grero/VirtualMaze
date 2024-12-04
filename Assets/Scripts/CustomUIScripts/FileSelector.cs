@@ -12,14 +12,20 @@ public class FileSelector : InputField {
     public OnPathSelectedEvent OnPathSelected = new OnPathSelectedEvent();
 
     protected override void Awake() {
-        browseBtn.onClick.AddListener(OnBrowseButtonClicked);
+        if( browseBtn != null)
+        {
+            browseBtn.onClick.AddListener(OnBrowseButtonClicked);
+        }
         onEndEdit.AddListener(OnEndEditPath);
         defaultPath = Application.dataPath;
     }
 
     private void OnBrowseButtonClicked() {
-        fb.OnFileBrowserExit += OnBrowserExit;
-        fb.TryShow(text, defaultPath);
+        if( fb != null )
+        {
+            fb.OnFileBrowserExit += OnBrowserExit;
+            fb.TryShow(text, defaultPath);
+        }
     }
 
     private void OnEndEditPath(string text) {
