@@ -95,6 +95,7 @@ public class LevelController : MonoBehaviour {
     
     // cache waitForUnpause for efficiency
     private WaitUntil waitIfPaused;
+    private WaitUntil waitUntilNoMovement;
 
     public int targetIndex;
     public bool success = false;
@@ -106,7 +107,7 @@ public class LevelController : MonoBehaviour {
 
     private void Awake() {
         waitIfPaused = new WaitUntil(() => !isPaused);
-
+        waitUntilNoMovement = new WaitUntil(() => !robotMovement.ismoving);
         RewardArea.OnEnteredTriggerZone += OnZoneEnter;
         RewardArea.OnExitedTriggerZone += OnZoneExit;
         RewardArea.InTriggerZoneListener += WhileInTriggerZone;
@@ -438,7 +439,9 @@ public class LevelController : MonoBehaviour {
 
         logicProvider.Cleanup(rewards);
 
+        //TODO: Wait until monkey is not touching the joystick
         //fade in and wait for fade in to finish
+        yield return waitUntilNoMovement;
         yield return FadeCanvas.fadeCanvas.AutoFadeIn();
     }
 
