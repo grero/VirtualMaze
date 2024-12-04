@@ -63,6 +63,7 @@ public class SessionStatusDisplay : MonoBehaviour {
     public static IEnumerator Countdown(string status, float seconds) {
         float timeLeft = seconds;
         DisplaySessionStatus(status);
+        // TODO: This is countdown time, used for both trial and inter-trial intervals
         while (timeLeft > 0) {
             DisplayTimeLeft(timeLeft);
             yield return waitForTick;
