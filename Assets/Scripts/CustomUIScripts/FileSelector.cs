@@ -17,7 +17,7 @@ public class FileSelector : InputField {
             browseBtn.onClick.AddListener(OnBrowseButtonClicked);
         }
         onEndEdit.AddListener(OnEndEditPath);
-        defaultPath = Application.dataPath;
+        defaultPath = Application.persistentDataPath;
     }
 
     private void OnBrowseButtonClicked() {
