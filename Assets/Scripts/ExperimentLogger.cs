@@ -94,7 +94,7 @@ public class ExperimentLogger {
             Debug.LogWarning(Msg_StreamNotClosed);
             CloseLog();
         }
-
+        Console.Write($"Saving to {saveLocation}");
         fs = new StreamWriter(Path.Combine(saveLocation, FileName(sessionNum)));
         //fs = FileWriter.CreateFileInFolder(SaveLocation, FileName(sessionNum));
         if (fs == null) {
