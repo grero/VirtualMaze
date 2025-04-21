@@ -1,10 +1,10 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
 using System.Reflection;
 
-[assembly: AssemblyVersion("4.1.*")]
+[assembly: AssemblyVersion("4.2.0")]
 public class VersionInfo {
     /// <summary>
     /// returns Major.Minor.Build formatted Version
