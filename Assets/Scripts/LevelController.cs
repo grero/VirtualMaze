@@ -280,6 +280,7 @@ public class LevelController : MonoBehaviour {
                     if (rewardsCtrl.playSound)
                     {
                         PlayerAudio.instance.PlayRewardClip();
+                        yield return new WaitForSeconds(1f);
                     }
                     rewardsCtrl.Reward();
                     trialCounter++;
