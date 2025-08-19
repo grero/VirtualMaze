@@ -83,14 +83,18 @@ public class SessionReader : ISessionDataReader {
     public void ParseHeader(StreamReader r) {
         string currLine = r.ReadLine();
         // check if first line is a JsonObject
-        if (currLine[0] == '{') { // newest version
+        if (currLine[0] == '{')
+        { // newest version
             context = JsonUtility.FromJson<SessionContext>(currLine);
             lineNumber++;
+            Debug.LogError("Treating the session file as a newer version. Starting parsing from line 1.");
         }
-        else {
+        else
+        {
             //parse as older header
             context = new SessionContext(currLine, r);
             lineNumber += 14;
+            Debug.LogError("Treating the session file as a newer version. Starting parsing from line 15.");
         }
     }
 
@@ -108,6 +112,7 @@ public class SessionReader : ISessionDataReader {
     }
 
     public SessionData ParseData(string rawData) {
+        Debug.LogError($"Attempting to parse: '{rawData}'");
         string[] dataArr = rawData.Trim().Split(' ');
 
         int flag = int.Parse(dataArr[0]);

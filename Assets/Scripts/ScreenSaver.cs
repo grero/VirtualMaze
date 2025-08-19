@@ -181,7 +181,7 @@ public class ScreenSaver : BasicGUIController {
             return;
         }
 
-        bool success = isMatFile(filePath);
+        bool success = IsFileWithExtension(filePath, ".txt");
         int numFrames = 0;
 
         if (success) {
@@ -219,30 +219,39 @@ public class ScreenSaver : BasicGUIController {
     }
 
     public IEnumerator ProcessSessionDataTask(string sessionPath, string edfPath, string toFolderPath, RaycastSettings raycastSettings) {
+        Debug.LogError("=== CHECKPOINT 1: Starting ProcessSessionDataTask ===");
         /* Setup */
         H5.close();
         H5.open();
+        Debug.LogError("=== CHECKPOINT 2: HDF5 initialized ===");
         fadeController.gameObject.SetActive(false);
         CueBinCollider.SetActive(true);
         HintBinCollider.SetActive(true);
 
         EyeDataReader eyeReader = null;
+        Debug.LogError($"=== CHECKPOINT 3: Checking if {edfPath} exists: {File.Exists(edfPath)} ===");
 
         Physics.SyncTransforms();
 
         if (isMatFile(edfPath)) {
             try {
+                Debug.LogError("=== CHECKPOINT 4: Attempting to create EyeMatReader ===");
                 eyeReader = new EyeMatReader(edfPath);
             }
             catch (Exception e) {
+                Debug.LogError($"=== CHECKPOINT 5 FAILED: {e.Message} ===");
                 Debug.LogException(e);
                 Console.WriteError("Unable to open eye data mat file.");
             }
         }
+        Debug.LogError("=== CHECKPOINT 6: Creating session reader ===");
 
         ISessionDataReader sessionReader = CreateSessionReader(sessionPath);
+        Debug.LogError($"=== CHECKPOINT 7: Session reader created: {sessionReader != null} ===");
 
-        if (eyeReader == null || sessionReader == null) {
+        if (eyeReader == null || sessionReader == null)
+        {
+            Debug.LogError("=== CHECKPOINT 8: EARLY EXIT - Reader creation failed ===");
             yield break;
         }
 
@@ -254,12 +263,14 @@ public class ScreenSaver : BasicGUIController {
         cueController.SetMode(CueController.Mode.Recording);
         cueController.UpdatePosition(robot);
         Physics.SyncTransforms();
-
+        Debug.LogError("=== CHECKPOINT 9: Preparing scene ===");
         yield return PrepareScene("Double Tee");
+        Debug.LogError("=== CHECKPOINT 10: Scene prepared, starting main processing ===");
 
-        string filename = $"{Path.GetFileNameWithoutExtension(sessionPath)}_{Path.GetFileNameWithoutExtension(edfPath)}.csv";
+
+        string filename = $"{Path.GetFileNameWithoutExtension(sessionPath)}_{Path.GetFileNameWithoutExtension(edfPath)}_new.csv";
         string gazeRadiusNoDot = $"{raycastSettings.GazeRadius}".Replace(".","-");
-        string multiCastName = $"{Path.GetFileNameWithoutExtension(sessionPath)}_{Path.GetFileNameWithoutExtension(edfPath)}_r{gazeRadiusNoDot}.csv";
+        string multiCastName = $"{Path.GetFileNameWithoutExtension(sessionPath)}_{Path.GetFileNameWithoutExtension(edfPath)}_r{gazeRadiusNoDot}_new.csv";
         DateTime start = DateTime.Now;
         Debug.LogError($"s: {start}");
 
@@ -272,6 +283,8 @@ public class ScreenSaver : BasicGUIController {
         }
         Console.Write($"s: {start}, e: {DateTime.Now}");
         Debug.LogError($"s: {start}, e: {DateTime.Now}");
+        Debug.LogError($"Screen dimensions after SetResolution: {Screen.width}x{Screen.height}");
+        Debug.LogError($"Camera pixel dimensions: {viewport.pixelWidth}x{viewport.pixelHeight}");
 
         /* Clean up */
         //SceneManager.LoadScene("Start");
@@ -978,6 +991,7 @@ public class ScreenSaver : BasicGUIController {
     /// <param name="trigger">SessionTrigger to move to</param>
     private void FindNextSessionTrigger(ISessionDataReader sessionReader, SessionTrigger trigger) {
         //move sessionReader to point to first trial
+        
         while (sessionReader.Next()) {
             if (sessionReader.CurrentData.trigger == trigger) {
                 MoveRobotTo(robot, sessionReader.CurrentData);
