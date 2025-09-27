@@ -181,7 +181,7 @@ public class ScreenSaver : BasicGUIController {
             return;
         }
 
-        bool success = IsFileWithExtension(filePath, ".txt");
+        bool success = IsFileWithExtension(filePath, ".mat");
         int numFrames = 0;
 
         if (success) {
@@ -368,14 +368,15 @@ public class ScreenSaver : BasicGUIController {
             $"distToScreen : {raycastSettings.DistToScreen}\n" +
             $"screenDims : {raycastSettings.ScreenCmDims}\n" +
             $"pixelDims : {raycastSettings.ScreenPixelDims}");
-        AreaRaycastManager areaRaycastManager = 
+
+        /*AreaRaycastManager areaRaycastManager = 
             new AreaRaycastManager(
                 angularRadius: raycastSettings.GazeRadius,
                 angularStepSize: raycastSettings.StepSize,
                 distToScreen: raycastSettings.DistToScreen,
                 screenDims : raycastSettings.ScreenCmDims,
                 pixelDims : raycastSettings.ScreenPixelDims
-            );
+            );*/
 
 
 
@@ -470,6 +471,7 @@ public class ScreenSaver : BasicGUIController {
                 // BinGazes(binSamples, binRecorder, jobQueue, mapper);
                 // Profiler.EndSample();
 
+                /*
                 Profiler.BeginSample("MulticastingPrepare");        
                 // Go through all in binSample to decide which need areacasting, and schedule areacasting & writing just for those
                 foreach(Fsample fsample in binSamples) {
@@ -536,7 +538,7 @@ public class ScreenSaver : BasicGUIController {
                         
                     }
                 }
-                Profiler.EndSample();
+                Profiler.EndSample();*/
 
 
 
@@ -635,7 +637,8 @@ public class ScreenSaver : BasicGUIController {
                     }
                 }
 
-                Profiler.BeginSample("MulticastingCleanUp");
+                
+                /*Profiler.BeginSample("MulticastingCleanUp");
                 foreach(Fsample fsample in leftOverSamples) {
                     if (fsample.dataType == DataTypes.SAMPLESTARTFIX){
                         // do a check to make sure it is not on a hint/view image
@@ -701,7 +704,7 @@ public class ScreenSaver : BasicGUIController {
                         
                     }
                 }
-                Profiler.EndSample();
+                Profiler.EndSample();*/
                 
             }
 

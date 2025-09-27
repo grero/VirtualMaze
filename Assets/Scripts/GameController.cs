@@ -243,12 +243,12 @@ public class GameController : MonoBehaviour {
 
 private string GetSessionFilePath(string sessionDir) {
         // Look for any session*.txt file
-        // Assume that session*.txt is stored in RawData*.txt, and sessions.list provided to VirtualMaze2 contains the path to session*.txt files
+        
         string[] txtFiles = Directory.GetFiles(sessionDir, "session*.txt");
         
         if (txtFiles.Length > 0) {
             Debug.LogError($"Found .txt session file: {txtFiles[0]}");
-            return txtFiles[0];
+            //return txtFiles[0];
         }
         string matPath = sessionDir + unityfileMatFile;
         if (File.Exists(matPath)) {
@@ -265,7 +265,7 @@ private string GetSessionFilePath(string sessionDir) {
         int total = sessions.Count;
         int count = 1, notifyAliveCount = 0;
 
-        while (sessions.Count > 0)
+        while (sessions.Count > 0 && count == 1)
         {
             path = sessions.Dequeue();
             logger.Print($"Starting({count}/{total}): {path}");
