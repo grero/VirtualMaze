@@ -181,7 +181,7 @@ public class ScreenSaver : BasicGUIController {
             return;
         }
 
-        bool success = isMatFile(filePath);
+        bool success = IsFileWithExtension(filePath, ".mat");
         int numFrames = 0;
 
         if (success) {
@@ -219,30 +219,40 @@ public class ScreenSaver : BasicGUIController {
     }
 
     public IEnumerator ProcessSessionDataTask(string sessionPath, string edfPath, string toFolderPath, RaycastSettings raycastSettings) {
+        Debug.LogError("=== CHECKPOINT 1: Starting ProcessSessionDataTask ===");
         /* Setup */
         H5.close();
         H5.open();
+        Debug.LogError("=== CHECKPOINT 2: HDF5 initialized ===");
         fadeController.gameObject.SetActive(false);
         CueBinCollider.SetActive(true);
         HintBinCollider.SetActive(true);
 
         EyeDataReader eyeReader = null;
+        Debug.LogError($"=== CHECKPOINT 3: Checking if {edfPath} exists: {File.Exists(edfPath)} ===");
 
         Physics.SyncTransforms();
 
         if (isMatFile(edfPath)) {
             try {
+                Debug.LogError("=== CHECKPOINT 4: Attempting to create EyeMatReader ===");
                 eyeReader = new EyeMatReader(edfPath);
             }
             catch (Exception e) {
+                Debug.LogError($"=== CHECKPOINT 5 FAILED: {e.Message} ===");
                 Debug.LogException(e);
                 Console.WriteError("Unable to open eye data mat file.");
             }
         }
+        Debug.LogError("=== CHECKPOINT 6: Creating session reader ===");
 
         ISessionDataReader sessionReader = CreateSessionReader(sessionPath);
+        Debug.LogError($"=== CHECKPOINT 7: Session reader created: {sessionReader != null} ===");
+        Debug.LogError("session path: " + sessionPath);
 
-        if (eyeReader == null || sessionReader == null) {
+        if (eyeReader == null || sessionReader == null)
+        {
+            Debug.LogError("=== CHECKPOINT 8: EARLY EXIT - Reader creation failed ===");
             yield break;
         }
 
@@ -254,12 +264,14 @@ public class ScreenSaver : BasicGUIController {
         cueController.SetMode(CueController.Mode.Recording);
         cueController.UpdatePosition(robot);
         Physics.SyncTransforms();
-
+        Debug.LogError("=== CHECKPOINT 9: Preparing scene ===");
         yield return PrepareScene("Double Tee");
+        Debug.LogError("=== CHECKPOINT 10: Scene prepared, starting main processing ===");
 
-        string filename = $"{Path.GetFileNameWithoutExtension(sessionPath)}_{Path.GetFileNameWithoutExtension(edfPath)}.csv";
+
+        string filename = $"{Path.GetFileNameWithoutExtension(sessionPath)}_{Path.GetFileNameWithoutExtension(edfPath)}_new.csv";
         string gazeRadiusNoDot = $"{raycastSettings.GazeRadius}".Replace(".","-");
-        string multiCastName = $"{Path.GetFileNameWithoutExtension(sessionPath)}_{Path.GetFileNameWithoutExtension(edfPath)}_r{gazeRadiusNoDot}.csv";
+        string multiCastName = $"{Path.GetFileNameWithoutExtension(sessionPath)}_{Path.GetFileNameWithoutExtension(edfPath)}_r{gazeRadiusNoDot}_new.csv";
         DateTime start = DateTime.Now;
         Debug.LogError($"s: {start}");
 
@@ -272,6 +284,8 @@ public class ScreenSaver : BasicGUIController {
         }
         Console.Write($"s: {start}, e: {DateTime.Now}");
         Debug.LogError($"s: {start}, e: {DateTime.Now}");
+        Debug.LogError($"Screen dimensions after SetResolution: {Screen.width}x{Screen.height}");
+        Debug.LogError($"Camera pixel dimensions: {viewport.pixelWidth}x{viewport.pixelHeight}");
 
         /* Clean up */
         //SceneManager.LoadScene("Start");
@@ -290,12 +304,20 @@ public class ScreenSaver : BasicGUIController {
         return msgEvent == null || msgEvent.dataType == DataTypes.NO_PENDING_ITEMS || trigger == SessionTrigger.ExperimentVersionTrigger;
     }
 
-    private decimal EnqueueData(Queue<SessionData> sessionFrames, ISessionDataReader sessionReader, Queue<AllFloatData> fixations, EyeDataReader eyeReader, out int status, out string reason) {
+    private decimal EnqueueData(int numberOfTriggers, Queue<SessionData> sessionFrames, ISessionDataReader sessionReader, Queue<AllFloatData> fixations, EyeDataReader eyeReader, out int status, out string reason) {
         Profiler.BeginSample("Enqueue");
         decimal sessionEventPeriod = LoadToNextTriggerSession(sessionReader, sessionFrames, out SessionData sessionData);
         uint edfEventPeriod = LoadToNextTriggerEdf(eyeReader, fixations, out MessageEvent edfdata, out SessionTrigger edfTrigger);
-
+        Debug.LogError($"Trigger #{numberOfTriggers}:");
+        Debug.LogError($"  Session: {sessionData.trigger} at total time {sessionEventPeriod}");
+        Debug.LogError($"  EDF: {edfTrigger} at total time {edfEventPeriod}");
+        Debug.LogError($"  Session index: {sessionReader.CurrentIndex}");
+        Debug.LogError($"  EDF timestamp: {edfdata?.time}");
         if (sessionData.trigger != edfTrigger) {
+            Debug.LogError("sessionData.trigger: " + sessionData.trigger);
+            Debug.LogError("edftrigger: " + edfTrigger);
+            Debug.LogError("No of triggers: " + numberOfTriggers);
+            Debug.LogError("sessionData.flag: " + sessionData.flag);
             throw new Exception("Unaligned session and eyedata! Are there missing triggers in eyelink or Unity data?");
         }
 
@@ -355,14 +377,15 @@ public class ScreenSaver : BasicGUIController {
             $"distToScreen : {raycastSettings.DistToScreen}\n" +
             $"screenDims : {raycastSettings.ScreenCmDims}\n" +
             $"pixelDims : {raycastSettings.ScreenPixelDims}");
-        AreaRaycastManager areaRaycastManager = 
+
+        /*AreaRaycastManager areaRaycastManager = 
             new AreaRaycastManager(
                 angularRadius: raycastSettings.GazeRadius,
                 angularStepSize: raycastSettings.StepSize,
                 distToScreen: raycastSettings.DistToScreen,
                 screenDims : raycastSettings.ScreenCmDims,
                 pixelDims : raycastSettings.ScreenPixelDims
-            );
+            );*/
 
 
 
@@ -379,6 +402,10 @@ public class ScreenSaver : BasicGUIController {
         int numberOfTriggers = 0;
         while (sessionReader.HasNext /*&& numberOfTriggers < 8*/) {
             numberOfTriggers++;
+                Debug.LogError($"=== Processing trigger #{numberOfTriggers} ===");
+                Debug.LogError($"  sessionReader.HasNext: {sessionReader.HasNext}");
+                Debug.LogError($"  Current session index: {sessionReader.CurrentIndex}");
+            
             /*add current to buffer since sessionData.timeDelta is the time difference from the previous frame.
              * and the previous frame raised a trigger for it to be printed in this frame*/
 
@@ -387,7 +414,7 @@ public class ScreenSaver : BasicGUIController {
             // dummy because it's in a try-catch below
             // decimal will always have a value fed to it, will break if try fails.
             try {
-                excessTime = EnqueueData(sessionFrames, sessionReader, fixations, eyeReader, out int status, out string reason);
+                excessTime = EnqueueData(numberOfTriggers, sessionFrames, sessionReader, fixations, eyeReader, out int status, out string reason);
             } catch (Exception e) {
                 Debug.LogException(e);
                 yield break;
@@ -457,6 +484,7 @@ public class ScreenSaver : BasicGUIController {
                 // BinGazes(binSamples, binRecorder, jobQueue, mapper);
                 // Profiler.EndSample();
 
+                /*
                 Profiler.BeginSample("MulticastingPrepare");        
                 // Go through all in binSample to decide which need areacasting, and schedule areacasting & writing just for those
                 foreach(Fsample fsample in binSamples) {
@@ -523,7 +551,7 @@ public class ScreenSaver : BasicGUIController {
                         
                     }
                 }
-                Profiler.EndSample();
+                Profiler.EndSample();*/
 
 
 
@@ -622,7 +650,8 @@ public class ScreenSaver : BasicGUIController {
                     }
                 }
 
-                Profiler.BeginSample("MulticastingCleanUp");
+                
+                /*Profiler.BeginSample("MulticastingCleanUp");
                 foreach(Fsample fsample in leftOverSamples) {
                     if (fsample.dataType == DataTypes.SAMPLESTARTFIX){
                         // do a check to make sure it is not on a hint/view image
@@ -688,7 +717,7 @@ public class ScreenSaver : BasicGUIController {
                         
                     }
                 }
-                Profiler.EndSample();
+                Profiler.EndSample();*/
                 
             }
 
@@ -978,6 +1007,7 @@ public class ScreenSaver : BasicGUIController {
     /// <param name="trigger">SessionTrigger to move to</param>
     private void FindNextSessionTrigger(ISessionDataReader sessionReader, SessionTrigger trigger) {
         //move sessionReader to point to first trial
+        
         while (sessionReader.Next()) {
             if (sessionReader.CurrentData.trigger == trigger) {
                 MoveRobotTo(robot, sessionReader.CurrentData);
@@ -1001,12 +1031,15 @@ public class ScreenSaver : BasicGUIController {
         while (!foundNextTrigger) {
             data = eyeReader.GetNextData();
 
-            if (data.dataType == DataTypes.MESSAGEEVENT) {
+            if (data.dataType == DataTypes.MESSAGEEVENT)
+            {
                 MessageEvent ev = (MessageEvent)data;
 
                 foundNextTrigger = ev.trigger == trigger;
+                
             }
-            else if (data.dataType == DataTypes.NO_PENDING_ITEMS) {
+            else if (data.dataType == DataTypes.NO_PENDING_ITEMS)
+            {
                 foundNextTrigger = true;
             }
         }
@@ -1035,13 +1068,25 @@ public class ScreenSaver : BasicGUIController {
 
         // Conditon evaluation is Left to Right and it short circuits.
         // Please do not change the order of this if conditon.
-        while (!isNextEventFound && reader.Next()) {
+        while (!isNextEventFound && reader.Next())
+        {
             data = reader.CurrentData;
+            if (reader.CurrentIndex >= 46244 && reader.CurrentIndex <= 46250) {
+                Debug.LogError($"*** CRITICAL INDEX {reader.CurrentIndex} ***");
+                Debug.LogError($"  trigger: {data.trigger}");
+                Debug.LogError($"  flag: {data.flag}");
+                Debug.LogError($"  timeDeltaMs: {data.timeDeltaMs}");
+                
+            }
             frames.Enqueue(data);
+            if (data.trigger != SessionTrigger.NoTrigger) {
+                Debug.LogError($"Session trigger found: {data.trigger} at index {reader.CurrentIndex}");
+            }
 
             KahanSummation(ref totalTime, ref c, data.timeDeltaMs);
 
             isNextEventFound = data.trigger != SessionTrigger.NoTrigger;
+            
         }
 
         return totalTime;
@@ -1075,6 +1120,8 @@ public class ScreenSaver : BasicGUIController {
                 MessageEvent ev = (MessageEvent)data;
                 latest = ev;
                 edfTrigger = ev.trigger;
+                Debug.LogError($"EDF trigger found: {ev.trigger} at timestamp {ev.time}");
+                Debug.LogError($"EDF message: {ev.message}");
                 return ev.time - fixations.Peek().time;
             }
             else if (type == DataTypes.NO_PENDING_ITEMS) {

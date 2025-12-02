@@ -24,12 +24,12 @@ public class GameController : MonoBehaviour {
 
     private bool generationComplete = false;
 
-    private string SessionPattern = "session[0-9]{2}";
+    private string SessionPattern = "[Ss]ession[0-9]{1}";
     private string DayPattern = "[0-9]{8}";
 
     private string eyelinkMatFile = $"{Path.DirectorySeparatorChar}eyelink.mat";
     private string unityfileMatFile = $"{Path.DirectorySeparatorChar}unityfile.mat";
-    private string resultFile = $"{Path.DirectorySeparatorChar}unityfile_eyelink.csv";
+    private string resultFile = $"{Path.DirectorySeparatorChar}unityfile_eyelink_new.csv";
 
     private static GameController _instance;
     public static GameController instance {
@@ -241,36 +241,71 @@ public class GameController : MonoBehaviour {
         }
     }
 
-    private async void ProcessSession(Queue<string> sessions, BatchModeLogger logger, RaycastSettings raycastSettings) {
+private string GetSessionFilePath(string sessionDir) {
+        // Look for any session*.txt file
+        
+        string[] txtFiles = Directory.GetFiles(sessionDir, "session*.txt");
+        
+        if (txtFiles.Length > 0) {
+            Debug.LogError($"Found .txt session file: {txtFiles[0]}");
+            //return txtFiles[0];
+        }
+        string matPath = sessionDir + unityfileMatFile;
+        if (File.Exists(matPath)) {
+            Debug.LogError($"Found .mat session file: {matPath}");
+            return matPath;
+        }
+        
+        Debug.LogError($"No session file found in {sessionDir}");
+        return null;
+    }
+    private async void ProcessSession(Queue<string> sessions, BatchModeLogger logger, RaycastSettings raycastSettings)
+    {
         string path;
         int total = sessions.Count;
         int count = 1, notifyAliveCount = 0;
 
-        while (sessions.Count > 0) {
+        while (sessions.Count > 0)
+        {
             path = sessions.Dequeue();
             logger.Print($"Starting({count}/{total}): {path}");
             generationComplete = false;
-            
+
+            string sessionFilePath = GetSessionFilePath(path);
+            if (sessionFilePath == null)
+            {
+                logger.Print($"Failed: No valid session file found in {path}");
+                count++;
+                continue;
+            }
+
+            logger.Print($"Path: {path}");
+            logger.Print($"Session file: {sessionFilePath}");
 
 
-            StartCoroutine(ProcessWrapper(path + unityfileMatFile, path + eyelinkMatFile, path, logger, raycastSettings));
-            while (!generationComplete) {
+            StartCoroutine(ProcessWrapper(sessionFilePath, path + eyelinkMatFile, path, logger, raycastSettings));
+            while (!generationComplete)
+            {
                 await Task.Delay(10000); //10 second notify-alive message
 
                 notifyAliveCount++;
                 notifyAliveCount %= 6; //only print message every 60 seconds
-                if (notifyAliveCount == 0) {
+                if (notifyAliveCount == 0)
+                {
                     logger.Print($"{saver.progressBar.value * 100}%: Data Generation is still running. {DateTime.Now.ToString()}");
                 }
             }
-            if (File.Exists(path + resultFile)) {
-                if (saver.progressBar.value != 1) {
+            if (File.Exists(path + resultFile))
+            {
+                if (saver.progressBar.value != 1)
+                {
                     logger.Print($"Exited but not finished, check debug logger for possible reason!");
                     logger.Print($"Percentage completed : {saver.progressBar.value * 100}%");
                 }
                 logger.Print($"Success: {path + resultFile}");
             }
-            else {
+            else
+            {
                 logger.Print($"Failed: {path + resultFile}. Add to the command \"-logfile <log file location>.txt\" to debug");
             }
             count++;
