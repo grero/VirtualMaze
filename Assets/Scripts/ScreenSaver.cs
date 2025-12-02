@@ -248,6 +248,7 @@ public class ScreenSaver : BasicGUIController {
 
         ISessionDataReader sessionReader = CreateSessionReader(sessionPath);
         Debug.LogError($"=== CHECKPOINT 7: Session reader created: {sessionReader != null} ===");
+        Debug.LogError("session path: " + sessionPath);
 
         if (eyeReader == null || sessionReader == null)
         {
@@ -303,12 +304,20 @@ public class ScreenSaver : BasicGUIController {
         return msgEvent == null || msgEvent.dataType == DataTypes.NO_PENDING_ITEMS || trigger == SessionTrigger.ExperimentVersionTrigger;
     }
 
-    private decimal EnqueueData(Queue<SessionData> sessionFrames, ISessionDataReader sessionReader, Queue<AllFloatData> fixations, EyeDataReader eyeReader, out int status, out string reason) {
+    private decimal EnqueueData(int numberOfTriggers, Queue<SessionData> sessionFrames, ISessionDataReader sessionReader, Queue<AllFloatData> fixations, EyeDataReader eyeReader, out int status, out string reason) {
         Profiler.BeginSample("Enqueue");
         decimal sessionEventPeriod = LoadToNextTriggerSession(sessionReader, sessionFrames, out SessionData sessionData);
         uint edfEventPeriod = LoadToNextTriggerEdf(eyeReader, fixations, out MessageEvent edfdata, out SessionTrigger edfTrigger);
-
+        Debug.LogError($"Trigger #{numberOfTriggers}:");
+        Debug.LogError($"  Session: {sessionData.trigger} at total time {sessionEventPeriod}");
+        Debug.LogError($"  EDF: {edfTrigger} at total time {edfEventPeriod}");
+        Debug.LogError($"  Session index: {sessionReader.CurrentIndex}");
+        Debug.LogError($"  EDF timestamp: {edfdata?.time}");
         if (sessionData.trigger != edfTrigger) {
+            Debug.LogError("sessionData.trigger: " + sessionData.trigger);
+            Debug.LogError("edftrigger: " + edfTrigger);
+            Debug.LogError("No of triggers: " + numberOfTriggers);
+            Debug.LogError("sessionData.flag: " + sessionData.flag);
             throw new Exception("Unaligned session and eyedata! Are there missing triggers in eyelink or Unity data?");
         }
 
@@ -393,6 +402,10 @@ public class ScreenSaver : BasicGUIController {
         int numberOfTriggers = 0;
         while (sessionReader.HasNext /*&& numberOfTriggers < 8*/) {
             numberOfTriggers++;
+                Debug.LogError($"=== Processing trigger #{numberOfTriggers} ===");
+                Debug.LogError($"  sessionReader.HasNext: {sessionReader.HasNext}");
+                Debug.LogError($"  Current session index: {sessionReader.CurrentIndex}");
+            
             /*add current to buffer since sessionData.timeDelta is the time difference from the previous frame.
              * and the previous frame raised a trigger for it to be printed in this frame*/
 
@@ -401,7 +414,7 @@ public class ScreenSaver : BasicGUIController {
             // dummy because it's in a try-catch below
             // decimal will always have a value fed to it, will break if try fails.
             try {
-                excessTime = EnqueueData(sessionFrames, sessionReader, fixations, eyeReader, out int status, out string reason);
+                excessTime = EnqueueData(numberOfTriggers, sessionFrames, sessionReader, fixations, eyeReader, out int status, out string reason);
             } catch (Exception e) {
                 Debug.LogException(e);
                 yield break;
@@ -1018,12 +1031,15 @@ public class ScreenSaver : BasicGUIController {
         while (!foundNextTrigger) {
             data = eyeReader.GetNextData();
 
-            if (data.dataType == DataTypes.MESSAGEEVENT) {
+            if (data.dataType == DataTypes.MESSAGEEVENT)
+            {
                 MessageEvent ev = (MessageEvent)data;
 
                 foundNextTrigger = ev.trigger == trigger;
+                
             }
-            else if (data.dataType == DataTypes.NO_PENDING_ITEMS) {
+            else if (data.dataType == DataTypes.NO_PENDING_ITEMS)
+            {
                 foundNextTrigger = true;
             }
         }
@@ -1052,13 +1068,25 @@ public class ScreenSaver : BasicGUIController {
 
         // Conditon evaluation is Left to Right and it short circuits.
         // Please do not change the order of this if conditon.
-        while (!isNextEventFound && reader.Next()) {
+        while (!isNextEventFound && reader.Next())
+        {
             data = reader.CurrentData;
+            if (reader.CurrentIndex >= 46244 && reader.CurrentIndex <= 46250) {
+                Debug.LogError($"*** CRITICAL INDEX {reader.CurrentIndex} ***");
+                Debug.LogError($"  trigger: {data.trigger}");
+                Debug.LogError($"  flag: {data.flag}");
+                Debug.LogError($"  timeDeltaMs: {data.timeDeltaMs}");
+                
+            }
             frames.Enqueue(data);
+            if (data.trigger != SessionTrigger.NoTrigger) {
+                Debug.LogError($"Session trigger found: {data.trigger} at index {reader.CurrentIndex}");
+            }
 
             KahanSummation(ref totalTime, ref c, data.timeDeltaMs);
 
             isNextEventFound = data.trigger != SessionTrigger.NoTrigger;
+            
         }
 
         return totalTime;
@@ -1092,6 +1120,8 @@ public class ScreenSaver : BasicGUIController {
                 MessageEvent ev = (MessageEvent)data;
                 latest = ev;
                 edfTrigger = ev.trigger;
+                Debug.LogError($"EDF trigger found: {ev.trigger} at timestamp {ev.time}");
+                Debug.LogError($"EDF message: {ev.message}");
                 return ev.time - fixations.Peek().time;
             }
             else if (type == DataTypes.NO_PENDING_ITEMS) {

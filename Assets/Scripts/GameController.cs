@@ -24,7 +24,7 @@ public class GameController : MonoBehaviour {
 
     private bool generationComplete = false;
 
-    private string SessionPattern = "[Ss]ession[0-9]{2}";
+    private string SessionPattern = "[Ss]ession[0-9]{1}";
     private string DayPattern = "[0-9]{8}";
 
     private string eyelinkMatFile = $"{Path.DirectorySeparatorChar}eyelink.mat";
@@ -265,7 +265,7 @@ private string GetSessionFilePath(string sessionDir) {
         int total = sessions.Count;
         int count = 1, notifyAliveCount = 0;
 
-        while (sessions.Count > 0 && count == 1)
+        while (sessions.Count > 0)
         {
             path = sessions.Dequeue();
             logger.Print($"Starting({count}/{total}): {path}");
