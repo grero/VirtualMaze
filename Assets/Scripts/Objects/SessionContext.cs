@@ -85,7 +85,7 @@ public class SessionContext {
     public SessionContext(string currentLine, StreamReader reader) {
         string line = currentLine;
         Version = GetValue(line);
-        /*
+        
         line = reader.ReadLine();
         TriggerVersion = GetValue(line);
 
@@ -101,32 +101,32 @@ public class SessionContext {
         MazeName = GetValue(line);
 
         line = reader.ReadLine();
-        NumTrial = int.Parse(GetValue(line));
+        NumberOfTrials = GetValue(line);
 
         line = reader.ReadLine();
-        CompletionWindow = int.Parse(GetValue(line));
+        CompletionWindow = GetValue(line);
 
         line = reader.ReadLine();
-        TimeoutDuration = int.Parse(GetValue(line));
+        TimeoutDuration = GetValue(line);
 
         line = reader.ReadLine();
-        IntersessionInterval = int.Parse(GetValue(line));
+        IntersessionInterval = GetValue(line);
 
         line = reader.ReadLine();
-        RewardTime = int.Parse(GetValue(line));
+        RewardTime = GetValue(line);
 
         line = reader.ReadLine();
-        RotationSpeed = float.Parse(GetValue(line));
+        RotationSpeed = GetValue(line);
 
         line = reader.ReadLine();
-        MovementSpeed = float.Parse(GetValue(line));
+        MovementSpeed = GetValue(line);
 
         line = reader.ReadLine();
-        JoystickDeadzone = float.Parse(GetValue(line));
+        JoystickDeadzone = GetValue(line);
 
         line = reader.ReadLine();
-        RewardViewCriteria = float.Parse(GetValue(line));
-        */
+        RewardViewCriteria = GetValue(line);
+        
     }
 
     private bool ProcessPosterLocations(List<PosterLocation> PosterLocations, string line) {
