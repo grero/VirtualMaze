@@ -1,4 +1,5 @@
 ﻿using System;
+using PureHDF;
 using VirtualMaze.Assets.Scripts.Utils;
 
 public class EyelinkMatFile : AbstractHDF5File {
@@ -15,7 +16,7 @@ public class EyelinkMatFile : AbstractHDF5File {
     public int Length { get => timestamps.Length; }
 
     public EyelinkMatFile(string _filename) : base(_filename) {
-        using (HDF5Group data = HDFHelper.GetMyDataGroup(this)) {
+        /*using (HDF5Group data = HDFHelper.GetMyDataGroup(this)) {
             trial_index = HDFHelper.GetDataMatrix<double>(data, "trial_timestamps");
             eyePos = HDFHelper.GetDataMatrix<float>(data, "eye_pos");
             timestamps = HDFHelper.GetDataMatrix<uint>(data, "timestamps");
@@ -25,18 +26,22 @@ public class EyelinkMatFile : AbstractHDF5File {
             fixationStarts = TwoDArrayUtils.GetColumn(fixationTimes,FIXATION_START_COL);
             fixationEnds = TwoDArrayUtils.GetColumn(fixationTimes,FIXATION_END_COL);
         }
-        //Hdf5Group grp = Groups["el"].Groups["data"];
-        //trial_index = (double[,])grp.Datasets["trial_timestamps"].GetData();
-        ////indices = (double[,])grp.Datasets["indices"].GetData();
-        //eyePos = (float[,])grp.Datasets["eye_pos"].GetData();
-        //timestamps = (uint[,])grp.Datasets["timestamps"].GetData();
+        */ 
 
-        //Array a = grp.Datasets["trial_codes"].GetData();
+        var file = H5File.OpenRead(_filename);
+        var group_data = file.Group("el").Group("data");
 
-        //Debug.Log(a);
+        trial_index = HDFHelperNew.ReadMatrixDouble(group_data, "trial_timestamps");
+        Console.Write($"Sample data: ({trial_index[0,1]}, {trial_index[0,2]})");
 
-        //trial_codes = (int[,])grp.Datasets["trial_codes"].GetData();
-        
+        eyePos = HDFHelperNew.ReadMatrixFloat(group_data, "eye_pos");
+        timestamps = HDFHelperNew.ReadMatrixUInt(group_data, "timestamps");
+        trial_codes = HDFHelperNew.ReadMatrixInt(group_data, "trial_codes");
+        double[,] fixationTimes = HDFHelperNew.ReadMatrixDouble(group_data, "fix_times");
+        fixationStarts = TwoDArrayUtils.GetColumn(fixationTimes,FIXATION_START_COL);
+        fixationEnds = TwoDArrayUtils.GetColumn(fixationTimes,FIXATION_END_COL);
+
+        Console.Write("Finished loading eyedata!");
     }
 
 
